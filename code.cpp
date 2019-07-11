@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS 
 #include <iostream>
 #include <cmath>
 #include <cstring>
@@ -7,13 +6,13 @@
 using namespace std;
 
 class Expression
-{ // Абстрактный класс
+{ // Abstract class
 public:
 	virtual Expression* diff(char x) = 0;
 	virtual void print() = 0;
-	virtual bool isZero() = 0; // Проверка на ноль
-	virtual bool isConst() = 0; // Проверка на константу(Number)
-	virtual float constValue() = 0; // Значение константы(Number)
+	virtual bool isZero() = 0; // Zero Check
+	virtual bool isConst() = 0; // Constant check(Number)
+	virtual float constValue() = 0; // Constant value(Number)
 };
 
 Expression* Simplify(Expression *ex);
@@ -21,7 +20,7 @@ Expression* Simplify(Expression *ex);
 Expression* ExpressionString(char *string);
 
 class Number : public Expression
-{ // Число
+{ // Number
 private:
 	float num;
 public:
@@ -40,7 +39,7 @@ public:
 };
 
 class Variable : public Expression
-{ // Переменная
+{ // Variable
 private:
 	//char var;
 public:
@@ -63,7 +62,7 @@ public:
 };
 
 class Add : public Expression
-{ // Сумма двух выражений
+{ // The sum of two expressions
 protected:
 	//Expression *left, *right;
 public:
@@ -90,7 +89,7 @@ public:
 };
 
 class Sub : public Expression
-{ // Разность двух выражений
+{ // The sub of two expressions
 public:
 	Expression *left, *right;
 	Sub(Expression *arg1, Expression *arg2): left(arg1), right(arg2) { }
@@ -115,7 +114,7 @@ public:
 };
 
 class Mul : public Expression
-{ // Произведение (ab)' = a'b + ab';
+{ // Composition (ab)' = a'b + ab';
 public:
 	Expression *left, *right;
 	Mul(Expression *arg1, Expression *arg2): left(arg1), right(arg2) { }
@@ -140,7 +139,7 @@ public:
 };
 
 class Div : public Expression
-{ // Частное (a/b)' = (a'b - ab')/b^2
+{ // quotient (a/b)' = (a'b - ab')/b^2
 public:
 	Expression *left, *right;
 	Div(Expression *arg1, Expression *arg2): left(arg1), right(arg2) { }
@@ -168,7 +167,7 @@ public:
 };
 
 class Pow : public Expression
-{ // Степень (x^y)' = y*x^(y-1)
+{ //  (x^y)' = y*x^(y-1)
 public:
 	Expression *arg;
 	Expression *degree;
@@ -196,7 +195,7 @@ public:
 };
 
 class Exp : public Expression
-{ // Экспонента (e^(2*x))' = (2*(e^(2*x)))
+{ // exponent (e^(2*x))' = (2*(e^(2*x)))
 public:
 	Expression *arg;
 	Exp(Expression *arg_): arg(arg_) { }
@@ -218,7 +217,7 @@ public:
 };
 
 int SearchFirstSymbol(char *str, char ch)
-{ // Поиск индекса первого включения символа
+{ // Find the index of the first character to turn on
 	int len = strlen(str);
 	for (int i = 0; i < len; i++)
 	{
@@ -229,7 +228,7 @@ int SearchFirstSymbol(char *str, char ch)
 }
 
 int SearchLastSymbol(char *str, char ch)
-{ // Поиск индекса включения первого с конца символа
+{ // Search index of inclusion of the first from the end of the character
 	int len = strlen(str);
 	for (int i = len - 1; i >= 0; i--)
 	{
@@ -240,7 +239,7 @@ int SearchLastSymbol(char *str, char ch)
 }
 
 char* SubString(char *str, int from, int to)
-{ // С from до to не включительно to 
+{ // From "from" to "to" inclusive to 
 	char *result = new char[to - from + 1];
 	for (int i = 0; i < to - from; i++)
 	{
@@ -251,12 +250,12 @@ char* SubString(char *str, int from, int to)
 }
 
 char* DeleteSpace(char *str)
-{ // Удаление пробелов по краям строки
+{ // Remove spaces at line edges
 	char space = ' ';
 	int left = -1;
 	int lenght = (int)strlen(str);
 	int right = lenght;
-	// Слева
+	// Left
 	for (int i = 0; i < lenght; i++)
 	{
 		if (str[i] != space)
@@ -279,10 +278,10 @@ char* DeleteSpace(char *str)
 }
 
 Expression* Simplify(Expression *ex)
-{ // Функция которая упрощает внешний вид выражения
+{ // A function that simplifies the appearance of an expression.
 	// NUMBER
 	if (ex->isConst())
-	{ // для числа
+	{ // For Number
 		return new Number(ex->constValue()); 
 	}
 	// MUL
@@ -329,7 +328,7 @@ Expression* Simplify(Expression *ex)
 			}
 		}
 		if (exMr->isConst())
-		{ // Аналогично верхней
+		{ // Similar to the top
 			if (typeid(*exMl) == typeid(Mul))
 			{
 				Expression *a = ((Mul*)exMl)->left;
@@ -361,7 +360,7 @@ Expression* Simplify(Expression *ex)
 	}
 	// ADD
 	if (typeid(*ex) == typeid(Add))
-	{ // для сложения
+	{ // 
 		Add *exA = (Add*)ex;
 		Expression *a1 = Simplify(exA->left); // a1 + b1
 		Expression *b1 = Simplify(exA->right);
@@ -413,7 +412,7 @@ Expression* Simplify(Expression *ex)
 			return Simplify(exPl);
 		}
 		if (exPr->isConst())
-		{ // Если степень числовое выражение
+		{ // If the degree is a numeric expression
 			return new Pow(Simplify(exPl), new Number(exPr->constValue()));
 		}
 	}
@@ -480,10 +479,10 @@ Expression* GetBinaryFunc(char *left, char *func, char *right)
 }
 
 Expression* SimpleExpression(char *str)
-{ // если нет скобок
-	// Ищем индекс бин операции + - * / ^
+{ // if there are no brackets
+	// We are looking for a bin operation index + - * / ^
 	int index = Max( Max( Max( Max( SearchFirstSymbol(str, '+'),SearchFirstSymbol(str, '-') ), SearchFirstSymbol(str, '*') ), SearchFirstSymbol(str, '/') ), SearchFirstSymbol(str, '^') );
-	// Если их нет, то либо число,либо переменная
+	// If not, then either a number or a variable
 	if (index == -1)
 	{
 		if (isFloat(str))
@@ -496,7 +495,7 @@ Expression* SimpleExpression(char *str)
 		}
 	}
 	else
-	{ // Разбираем на левую,операцию и правую части
+	{ // Parse the left, the operation and the right side
 		char *left = SubString(str, 0 , index);
 		char *right = SubString(str, index+1, strlen(str));
 		GetBinaryFunc(left, SubString(str, index, index+1), right);
@@ -505,22 +504,22 @@ Expression* SimpleExpression(char *str)
 
 Expression* ExpressionString(char *string)
 {
-	Expression *result; // Результат
-	string = DeleteSpace(string); // Убираем пробелы по бокам
+	Expression *result; // Result
+	string = DeleteSpace(string); // We remove spaces on the sides
 	int lenght = strlen(string);
-	// Ищем внешние скобки
+	// Looking for external brackets
 	int l = SearchFirstSymbol(string, '(');
 	int r = SearchLastSymbol(string, ')');
-	// Если скобок нет
+	// If there are no brackets
 	if (l == -1 && r == -1)
 	{
 		return Simplify(SimpleExpression(string));
 	}
-	// Если есть скобки рассмотрим случаи
-	// Найдем парные скобки для внешних
+	// If there are brackets, consider the cases.
+	// Find paired brackets for external
 	int rp = -1, lp = -1;
-	int Counter = 0; // Счетчик скобок
-	// Ищем пару для левой скобки
+	int Counter = 0; // counter brackets
+	// We are looking for a pair for the left bracket
 	for (int i = 0; i < lenght; i++)
 	{
 		if (string[i] == '(')
@@ -555,16 +554,16 @@ Expression* ExpressionString(char *string)
 		}
 	}
 	if (l == 0 && r == lenght-1 && lp == r)
-	{ // (.o.) одни внешние скобки
-		result = ExpressionString( SubString(string, 1, lenght-1) ); // Убираем внешние скобки и опять запускаем функцию
+	{ // (.o.) one outer brackets
+		result = ExpressionString( SubString(string, 1, lenght-1) ); // Remove the external brackets and run the function again.
 	}
 	else
 		if (lp != r)
-		{ // ().o.() две пары внешних скобок, между ними должна быть бинарная операция
-			char *funcstr = SubString(string, lp+1, rp); // забирем подстроку с где должна находится операция
-			// Ищем индекс бинарной операции в подстроке
+		{ // ().o.() two pairs of external brackets, between them there must be a binary operation
+			char *funcstr = SubString(string, lp+1, rp); // pick up the substring where the operation should be
+			// We are looking for the binary operation index in the substring
 			int index = Max( Max( Max( Max( SearchFirstSymbol(funcstr, '+'),SearchFirstSymbol(funcstr, '-') ), SearchFirstSymbol(funcstr, '*') ), SearchFirstSymbol(funcstr, '/') ), SearchFirstSymbol(funcstr, '^') );
-			index = index + lp + 1; // Получаем индекс операции во всей строке
+			index = index + lp + 1; // Get the index of the operation in the whole row
 			char *left = DeleteSpace( SubString(string, 0 , index) );
 			char *func = DeleteSpace( SubString(string, index, index+1) );
 			char *right = DeleteSpace( SubString(string, index+1, lenght) );
@@ -573,26 +572,26 @@ Expression* ExpressionString(char *string)
 		else
 		{
 			if (r != lenght-1)
-			{ // ...()o.. или ()o..
-				char *funcstr = SubString(string, lp+1, lenght); // забирем подстроку с где должна находится операция
+			{ // ...()o.. or ()o..
+				char *funcstr = SubString(string, lp+1, lenght); // pick up the substring where the operation should be
 				int index = Max( Max( Max( Max( SearchFirstSymbol(funcstr, '+'),SearchFirstSymbol(funcstr, '-') ), SearchFirstSymbol(funcstr, '*') ), SearchFirstSymbol(funcstr, '/') ), SearchFirstSymbol(funcstr, '^') );
-				index = index + lp + 1; // Получаем индекс операции во всей строке
+				index = index + lp + 1; // Get the index of the operation in the whole row
 				char *left = DeleteSpace( SubString(string, 0, index) );
 				char *func = DeleteSpace( SubString(string, index, index+1) );
 				char *right = DeleteSpace( SubString(string, index+1, lenght) );
 				result = GetBinaryFunc(left, func, right);
 			}
 			else
-			{ // ..o() или exp()
+			{ // ..o() or exp()
 				char *funcstr = SubString(string, 0, l);
 				int index = Max( Max( Max( Max( SearchFirstSymbol(funcstr, '+'),SearchFirstSymbol(funcstr, '-') ), SearchFirstSymbol(funcstr, '*') ), SearchFirstSymbol(funcstr, '/') ), SearchFirstSymbol(funcstr, '^') );
 				if (index == -1)
-				{ // Тогда exp()
+				{ // then exp()
 					char *arg = DeleteSpace( SubString(string, l+1, r) );
 					result = new Exp( ExpressionString(arg) );
 				}
 				else
-				{ // Тогда ..o()
+				{ // then ..o()
 					char *left = DeleteSpace( SubString(string, 0, index) );
 					char *func = DeleteSpace( SubString(string, index, index+1) );
 					char *right = DeleteSpace( SubString(string, index+1, lenght) );
